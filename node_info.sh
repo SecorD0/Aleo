@@ -54,24 +54,26 @@ printf_n(){ printf "$1\n" "${@:2}"; }
 main() {
 	# Texts
 	if [ "$language" = "RU" ]; then
-		local t_wa="Адрес кошелька:         ${C_LGn}%s${RES}\n"
+		local t_wa="\nАдрес кошелька:         ${C_LGn}%s${RES}"
 		
-		local t_nv="Версия ноды:            ${C_LGn}%s${RES}"
+		local t_nv="\nВерсия ноды:            ${C_LGn}%s${RES}"
 		local t_lb="Последний блок:         ${C_LGn}%s${RES}"
 		local t_sy1="Нода синхронизирована:  ${C_LR}нет${RES}"
 		local t_sy2="Осталось нагнать:       ${C_LR}%d-%d=%d (около %.2f мин.)${RES}"
 		local t_sy3="Нода синхронизирована:  ${C_LGn}да${RES}"
+		local t_sy_err="${C_LR}\nНода не запущена или запускается!${RES}"
 
 	# Send Pull request with new texts to add a language - https://github.com/SecorD0/Aleo/blob/main/node_info.sh
 	#elif [ "$language" = ".." ]; then
 	else
-		local t_wa="Wallet address:          ${C_LGn}%s${RES}\n"
+		local t_wa="\nWallet address:          ${C_LGn}%s${RES}"
 		
-		local t_nv="Node version:            ${C_LGn}%s${RES}"
+		local t_nv="\nNode version:            ${C_LGn}%s${RES}"
 		local t_lb="Latest block height:     ${C_LGn}%s${RES}"
 		local t_sy1="Node is synchronized:    ${C_LR}no${RES}"
 		local t_sy2="It remains to catch up:  ${C_LR}%d-%d=%d (about %.2f min.)${RES}"
 		local t_sy3="Node is synchronized:    ${C_LGn}yes${RES}"
+		local t_sy_err="${C_LR}\nThe node isn't running or is starting!${RES}"
 	fi
 	
 	# Actions
@@ -94,14 +96,16 @@ main() {
 	fi
 	
 	local local_rpc="http://localhost:${port}/"
-	local node_info=`wget -qO- --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "getnodestate", "params": [] }' "$local_rpc" | jq`
+	local node_info=`wget -qO- --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "getnodestate", "params": [] }' "$local_rpc" 2>/dev/null | jq`
 
 	local node_version=`snarkos --version`
-	local latest_block_height=`jq -r ".result.latest_block_height" <<< $node_info`
-	if [ `jq -r ".result.status" <<< $node_info` = "Mining" ]; then
-		local catching_up="false"
-	else
-		local catching_up="true"
+	if [ -n "$node_info" ]; then
+		local latest_block_height=`jq -r ".result.latest_block_height" <<< $node_info`
+		if [ `jq -r ".result.status" <<< $node_info` = "Mining" ]; then
+			local catching_up="false"
+		else
+			local catching_up="true"
+		fi
 	fi
 
 	# Output
@@ -116,15 +120,19 @@ main() {
 			printf_n "$t_wa" "$wallet_address"
 		fi
 		printf_n "$t_nv" "$node_version"
-		printf_n "$t_lb" "$latest_block_height"
-		if [ "$catching_up" = "true" ]; then
-			local current_block=`wget -qO- https://www.aleo.network/api/latestblocks?limit=1 | jq -r ".[0].height"`
-			local diff=`bc -l <<< "$current_block-$latest_block_height"`
-			local takes_time=`bc -l <<< "$diff/20/60"`
-			printf_n "$t_sy1"
-			printf_n "$t_sy2" "$current_block" "$latest_block_height" "$diff" "$takes_time"		
+		if [ -n "$latest_block_height" ]; then
+			printf_n "$t_lb" "$latest_block_height"
+			if [ "$catching_up" = "true" ]; then
+				local current_block=`wget -qO- https://www.aleo.network/api/latestblocks?limit=1 | jq -r ".[0].height"`
+				local diff=`bc -l <<< "$current_block-$latest_block_height"`
+				local takes_time=`bc -l <<< "$diff/20/60"`
+				printf_n "$t_sy1"
+				printf_n "$t_sy2" "$current_block" "$latest_block_height" "$diff" "$takes_time"		
+			else
+				printf_n "$t_sy3"
+			fi
 		else
-			printf_n "$t_sy3"
+			printf_n "$t_sy_err"
 		fi
 		printf_n
 	fi
