@@ -96,7 +96,7 @@ main() {
 	fi
 	
 	local local_rpc="http://localhost:${port}/"
-	local node_info=`wget -qO- --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "getnodestate", "params": [] }' "$local_rpc" 2>/dev/null | jq`
+	local node_info=`wget -qO-  -t 1 -T 5 --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "getnodestate", "params": [] }' "$local_rpc" 2>/dev/null | jq`
 
 	local node_version=`snarkos --version`
 	if [ -n "$node_info" ]; then
