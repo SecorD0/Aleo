@@ -90,8 +90,8 @@ Remember to save this file: ${C_LR}$HOME/account_aleo.txt${RES}
 To view info about the node: ${C_LGn}aleo_node_info${RES}
 Page in a Checker: ${C_LGn}https://nodes.guru/aleo/aleochecker?q=`wget -qO- eth0.me`${RES}
 
-To view the node status: ${C_LGn}sudo systemctl status aleod${RES}
 To view the node log: ${C_LGn}aleo_log${RES}
+To view the node status: ${C_LGn}sudo systemctl status aleod${RES}
 To restart the node: ${C_LGn}sudo systemctl restart aleod${RES}
 "
 }
