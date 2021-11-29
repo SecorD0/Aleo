@@ -84,7 +84,9 @@ WantedBy=multi-user.target" > /etc/systemd/system/aleod.service
 	printf_n "
 The miner was ${C_LGn}started${RES}.
 Remember to save this file: ${C_LR}$HOME/account_aleo.txt${RES}
+
 \tv ${C_LGn}Useful commands${RES} v
+
 To view info about the node: ${C_LGn}aleo_node_info${RES}
 Page in a Checker: ${C_LGn}https://nodes.guru/aleo/aleochecker?q=`wget -qO- eth0.me`${RES}
 
