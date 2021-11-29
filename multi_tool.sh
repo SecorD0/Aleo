@@ -95,7 +95,7 @@ To restart the node: ${C_LGn}sudo systemctl restart aleod${RES}
 }
 
 # Actions
-sudo apt install wget -y
+sudo apt install wget -y &>/dev/null
 . <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/logo.sh)
 $function
 printf_n "${C_LGn}Done!${RES}"
