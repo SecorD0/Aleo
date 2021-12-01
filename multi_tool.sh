@@ -20,6 +20,7 @@ while test $# -gt 0; do
 		echo -e "  -h, --help       show the help page"
 		echo -e "  -n, --node PORT  assign the specified port to use RPC (default is ${C_LGn}${node}${RES})"
 		echo -e "  -r, --rpc PORT   assign the specified port to use RPC (default is ${C_LGn}${rpc}${RES})"
+		echo -e "  -u, --update     update the node"
 		echo
 		echo -e "${C_LGn}Useful URLs${RES}:"
 		echo -e "https://github.com/SecorD0/Aleo/blob/main/multi_tool.sh — script URL"
@@ -38,6 +39,10 @@ while test $# -gt 0; do
 		rpc=`option_value $1`
 		shift
 		;;
+	-u|--update)
+		function="update"
+		shift
+		;;
 	*|--)
 		break
 		;;
@@ -49,9 +54,13 @@ printf_n(){ printf "$1\n" "${@:2}"; }
 install() {
 	sudo apt update
 	sudo apt upgrade -y
-	sudo apt install wget jq git build-essential pkg-config libssl-dev -y
-	wget -qO /usr/bin/snarkos https://github.com/SecorD0/Aleo/releases/download/2.0.0/snarkos
-	chmod +x /usr/bin/snarkos
+	sudo apt install tmux wget jq git build-essential pkg-config libssl-dev -y
+	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/installers/rust.sh)
+	git clone https://github.com/AleoHQ/snarkOS.git --depth 1
+	cd snarkOS
+	cargo build --release
+	mv $HOME/snarkOS/target/release/snarkos /usr/bin
+	cd
 	if [ ! -f $HOME/account_aleo.txt ]; then
 		snarkos experimental new_account > $HOME/account_aleo.txt
 	fi
@@ -94,6 +103,9 @@ To view the node log: ${C_LGn}aleo_log${RES}
 To view the node status: ${C_LGn}sudo systemctl status aleod${RES}
 To restart the node: ${C_LGn}sudo systemctl restart aleod${RES}
 "
+}
+update() {
+	echo
 }
 
 # Actions
