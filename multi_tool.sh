@@ -52,10 +52,6 @@ done
 # Functions
 printf_n(){ printf "$1\n" "${@:2}"; }
 install() {
-	sudo apt update
-	sudo apt upgrade -y
-	sudo apt install tmux wget jq git build-essential pkg-config libssl-dev -y
-	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/installers/rust.sh)
 	git clone https://github.com/AleoHQ/snarkOS.git --depth 1
 	cd snarkOS
 	cargo build --release
@@ -146,4 +142,8 @@ auto_update() {
 # Actions
 sudo apt install wget -y &>/dev/null
 . <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/logo.sh)
+sudo apt update
+sudo apt upgrade -y
+sudo apt install tmux wget jq git build-essential pkg-config libssl-dev -y
+. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/installers/rust.sh)
 $function
