@@ -109,6 +109,7 @@ update() {
 		printf_n "${C_R}Change the name of the service file to ${C_LGn}aleod.service${RES}"
 		return 1 2>/dev/null; exit 1	
 	fi
+	cd
 	if [ ! -d $HOME/snarkOS ]; then
 		printf_n "${C_LGn}Building binary...${RES}"
 		sudo systemctl stop "$service_file"
