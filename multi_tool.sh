@@ -109,7 +109,6 @@ update() {
 		printf_n "${C_R}Change the name of the service file to ${C_LGn}aleod.service${RES}"
 		return 1 2>/dev/null; exit 1	
 	fi
-	cd
 	if [ ! -d $HOME/snarkOS ]; then
 		printf_n "${C_LGn}Building binary...${RES}"
 		sudo systemctl stop "$service_file"
@@ -143,6 +142,7 @@ auto_update() {
 # Actions
 sudo apt install wget -y &>/dev/null
 . <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/logo.sh)
+cd
 sudo apt update
 sudo apt upgrade -y
 sudo apt install tmux wget jq git build-essential pkg-config libssl-dev -y
