@@ -98,7 +98,7 @@ main() {
 	local local_rpc="http://localhost:${port}/"
 	local node_info=`wget -qO-  -t 1 -T 5 --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "getnodestate", "params": [] }' "$local_rpc" 2>/dev/null | jq`
 
-	local node_version="`snarkos --version` `jq -r '.result.version' <<< \"$node_info\"`"
+	local node_version="`snarkos --version` | version `jq -r '.result.version' <<< \"$node_info\"`"
 	if [ -n "$node_info" ]; then
 		local latest_block_height=`jq -r ".result.latest_block_height" <<< $node_info`
 		if [ `jq -r ".result.status" <<< $node_info` = "Mining" ]; then
