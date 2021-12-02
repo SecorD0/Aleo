@@ -105,6 +105,41 @@ To restart the node: ${C_LGn}sudo systemctl restart aleod${RES}
 "
 }
 update() {
+	if [ -f /etc/systemd/system/aleod.service ]; then
+		local service_file="aleod.service"
+	elif [ -f /etc/systemd/system/aleod-miner.service ]; then
+		local service_file="aleod-miner.service"
+	else
+		printf_n "${C_R}Change the name of the service file to ${C_LGn}aleod.service${RES}"
+		return 1 2>/dev/null; exit 1	
+	fi
+	if [ ! -d $HOME/snarkOS ]; then
+		printf_n "${C_LGn}Building binary...${RES}"
+		sudo systemctl stop "$service_file"
+		/usr/bin/git clone https://github.com/AleoHQ/snarkOS.git --depth 1
+		cd $HOME/snarkOS
+		cargo build --release
+		mv $HOME/snarkOS/target/release/snarkos /usr/bin
+		sudo systemctl restart "$service_file"
+	else
+		printf_n "${C_LGn}Checking for updates...${RES}"
+		cd $HOME/snarkOS
+		/usr/bin/git stash &>/dev/null
+		status=`/usr/bin/git pull`
+		if [ "$status" != "Already up to date." ]; then
+			printf_n "${C_LGn}Updating the node...!${RES}"
+			/root/.cargo/bin/cargo clean
+			/root/.cargo/bin/cargo build --release
+			mv $HOME/snarkOS/target/release/snarkos /usr/bin
+			sudo systemctl restart "$service_file"
+		else
+			printf_n "${C_LGn}Binary file of the current version${RES}"
+		fi
+	fi
+	cd
+	printf_n "${C_LGn}Done!${RES}"
+}
+auto_update() {
 	echo
 }
 
