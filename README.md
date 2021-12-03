@@ -1,3 +1,3 @@
 # Aleo
 
-Official repository: https://github.com/massalabs/massa
+Official repository: https://github.com/AleoHQ/snarkOS
