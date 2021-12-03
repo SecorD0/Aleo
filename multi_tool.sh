@@ -52,6 +52,10 @@ done
 # Functions
 printf_n(){ printf "$1\n" "${@:2}"; }
 install() {
+	sudo apt update
+	sudo apt upgrade -y
+	sudo apt install tmux wget jq git build-essential pkg-config libssl-dev -y
+	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/installers/rust.sh)
 	git clone https://github.com/AleoHQ/snarkOS.git --depth 1
 	cd snarkOS
 	cargo build --release
@@ -112,6 +116,7 @@ update() {
 	if [ ! -d $HOME/snarkOS ]; then
 		printf_n "${C_LGn}Building binary...${RES}"
 		sudo systemctl stop "$service_file"
+		. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/installers/rust.sh)
 		/usr/bin/git clone https://github.com/AleoHQ/snarkOS.git --depth 1
 		cd $HOME/snarkOS
 		cargo build --release
@@ -124,6 +129,7 @@ update() {
 		status=`/usr/bin/git pull`
 		if [ "$status" != "Already up to date." ]; then
 			printf_n "${C_LGn}Updating the node...!${RES}"
+			. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/installers/rust.sh)
 			/root/.cargo/bin/cargo clean
 			/root/.cargo/bin/cargo build --release
 			mv $HOME/snarkOS/target/release/snarkos /usr/bin
@@ -143,8 +149,4 @@ auto_update() {
 sudo apt install wget -y &>/dev/null
 . <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/logo.sh)
 cd
-sudo apt update
-sudo apt upgrade -y
-sudo apt install tmux wget jq git build-essential pkg-config libssl-dev -y
-. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/installers/rust.sh)
 $function
