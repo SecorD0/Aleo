@@ -57,7 +57,8 @@ main() {
 		local t_wa="\nАдрес кошелька:         ${C_LGn}%s${RES}"
 		
 		local t_nv="\nВерсия ноды:            ${C_LGn}%s${RES}"
-		local t_lb="Последний блок:         ${C_LGn}%s${RES}"
+		local t_lb="Последний блок:         ${C_LGn}%d${RES}"
+		local t_bm="Блоков намайнено:       ${C_LGn}%d${RES} (${C_R}может быть неверно${RES})"
 		local t_sy1="Нода синхронизирована:  ${C_LR}нет${RES}"
 		local t_sy2="Осталось нагнать:       ${C_LR}%d-%d=%d (около %.2f мин.)${RES}"
 		local t_sy3="Нода синхронизирована:  ${C_LGn}да${RES}"
@@ -69,7 +70,8 @@ main() {
 		local t_wa="\nWallet address:          ${C_LGn}%s${RES}"
 		
 		local t_nv="\nNode version:            ${C_LGn}%s${RES}"
-		local t_lb="Latest block height:     ${C_LGn}%s${RES}"
+		local t_lb="Latest block height:     ${C_LGn}%d${RES}"
+		local t_bm="Blocks mined:            ${C_LGn}%d${RES} (${C_R}may be incorrect${RES})"
 		local t_sy1="Node is synchronized:    ${C_LR}no${RES}"
 		local t_sy2="It remains to catch up:  ${C_LR}%d-%d=%d (about %.2f min.)${RES}"
 		local t_sy3="Node is synchronized:    ${C_LGn}yes${RES}"
@@ -80,16 +82,18 @@ main() {
 	sudo apt install wget jq bc -y &>/dev/null
 	if [ -n "$ALEO_ADDRESS" ]; then local wallet_address="$ALEO_ADDRESS"; fi
 	if [ -f /etc/systemd/system/aleod.service ]; then
-		local service_file="/etc/systemd/system/aleod.service"
+		local service_file_path="/etc/systemd/system/aleod.service"
+		local service_file="aleod.service"
 	elif [ -f /etc/systemd/system/aleod-miner.service ]; then
-		local service_file="/etc/systemd/system/aleod-miner.service"
+		local service_file_path="/etc/systemd/system/aleod-miner.service"
+		local service_file="aleod.service"
 	else
 		printf_n "${C_R}Change the name of the service file to ${C_LGn}aleod.service${RES}"
 		return 1 2>/dev/null; exit 1	
 	fi
-	local port=`cat "$service_file" 2>/dev/null | grep -oPm1 "(?<=rpc )([^%]+)(?=$)" | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
+	local port=`cat "$service_file_path" 2>/dev/null | grep -oPm1 "(?<=rpc )([^%]+)(?=$)" | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
 	if [ ! -n "$port" ]; then
-		local port=`cat "$service_file" 2>/dev/null | grep -oPm1 "(?<=rpc )([^%]+)(?= --)" | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
+		local port=`cat "$service_file_path" 2>/dev/null | grep -oPm1 "(?<=rpc )([^%]+)(?= --)" | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
 		if [ ! -n "$port" ]; then
 			local port="3032"
 		fi
@@ -122,6 +126,8 @@ main() {
 		printf_n "$t_nv" "$node_version"
 		if [ -n "$latest_block_height" ]; then
 			printf_n "$t_lb" "$latest_block_height"
+			local mined_blocks=`journalctl -u aleod.service -o cat | grep -oP "(?<=confirmed_blocks = )([^%]+)(?=, pending_blocks)" | sort -n | tail -1`
+			printf_n "$t_bm" "$mined_blocks"
 			if [ "$catching_up" = "true" ]; then
 				local current_block=`wget -qO- https://www.aleo.network/api/latestblocks?limit=1 | jq -r ".[0].height"`
 				local diff=`bc -l <<< "$current_block-$latest_block_height"`
