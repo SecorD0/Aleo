@@ -129,7 +129,7 @@ main() {
 			local mined_blocks=`journalctl -u aleod.service -o cat -n 10000 | grep -oP "(?<=confirmed_blocks = )([^%]+)(?=, pending_blocks)" | tail -1`
 			printf_n "$t_bm" "$mined_blocks"
 			if [ "$catching_up" = "true" ]; then
-				local current_block=`wget -qO- https://www.aleo.network/api/latestblocks?limit=1 | jq -r ".[0].height"`
+				local current_block=`wget -qO-  -t 1 -T 5 --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "latestblockheight", "params": [] }' http://95.78.238.174:3032/ 2>/dev/null | jq ".result"`
 				local diff=`bc -l <<< "$current_block-$latest_block_height"`
 				local takes_time=`bc -l <<< "$diff/20/60"`
 				printf_n "$t_sy1"
