@@ -58,7 +58,7 @@ main() {
 		
 		local t_nv="\nВерсия ноды:            ${C_LGn}%s${RES}"
 		local t_lb="Последний блок:         ${C_LGn}%d${RES}"
-		local t_bm="Блоков намайнено:       ${C_LGn}%d${RES} (${C_R}может быть неверно${RES})"
+		local t_bm="Блоков намайнено:       ${C_LGn}%d${RES}"
 		local t_sy1="Нода синхронизирована:  ${C_LR}нет${RES}"
 		local t_sy2="Осталось нагнать:       ${C_LR}%d-%d=%d (около %.2f мин.)${RES}"
 		local t_sy3="Нода синхронизирована:  ${C_LGn}да${RES}"
@@ -71,7 +71,7 @@ main() {
 		
 		local t_nv="\nNode version:            ${C_LGn}%s${RES}"
 		local t_lb="Latest block height:     ${C_LGn}%d${RES}"
-		local t_bm="Blocks mined:            ${C_LGn}%d${RES} (${C_R}may be incorrect${RES})"
+		local t_bm="Blocks mined:            ${C_LGn}%d${RES}"
 		local t_sy1="Node is synchronized:    ${C_LR}no${RES}"
 		local t_sy2="It remains to catch up:  ${C_LR}%d-%d=%d (about %.2f min.)${RES}"
 		local t_sy3="Node is synchronized:    ${C_LGn}yes${RES}"
@@ -126,7 +126,7 @@ main() {
 		printf_n "$t_nv" "$node_version"
 		if [ -n "$latest_block_height" ]; then
 			printf_n "$t_lb" "$latest_block_height"
-			local mined_blocks=`journalctl -u aleod.service -o cat -n 10000 | grep -oP "(?<=confirmed_blocks = )([^%]+)(?=, pending_blocks)" | tail -1`
+			local mined_blocks=`wget -qO- "https://www.aleo.network/api/miner-info?address=$wallet_address" | jq -r ".blocksMined | length"`
 			printf_n "$t_bm" "$mined_blocks"
 			if [ "$catching_up" = "true" ]; then
 				local current_block=`wget -qO-  -t 1 -T 5 --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "latestblockheight", "params": [] }' http://95.78.238.174:3032/ 2>/dev/null | jq ".result"`
