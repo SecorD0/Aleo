@@ -126,7 +126,7 @@ main() {
 		printf_n "$t_nv" "$node_version"
 		if [ -n "$latest_block_height" ]; then
 			printf_n "$t_lb" "$latest_block_height"
-			local mined_blocks=`journalctl -u aleod.service -o cat | grep -oP "(?<=confirmed_blocks = )([^%]+)(?=, pending_blocks)" | sort -n | tail -1`
+			local mined_blocks=`journalctl -u aleod.service -o cat -n 10000 | grep -oP "(?<=confirmed_blocks = )([^%]+)(?=, pending_blocks)" | tail -1`
 			printf_n "$t_bm" "$mined_blocks"
 			if [ "$catching_up" = "true" ]; then
 				local current_block=`wget -qO- https://www.aleo.network/api/latestblocks?limit=1 | jq -r ".[0].height"`
