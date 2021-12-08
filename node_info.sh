@@ -54,27 +54,37 @@ printf_n(){ printf "$1\n" "${@:2}"; }
 main() {
 	# Texts
 	if [ "$language" = "RU" ]; then
-		local t_wa="\nАдрес кошелька:         ${C_LGn}%s${RES}"
+		local t_wa="\nАдрес кошелька:           ${C_LGn}%s${RES}"
+		local t_mb="Блоков намайнено:         ${C_LGn}%d${RES}"
+		local t_lbp="Место в таблице лидеров:  ${C_LGn}%d${RES}"
+		local t_lbs="Очков набрано:            ${C_LGn}%d${RES}"
 		
-		local t_nv="\nВерсия ноды:            ${C_LGn}%s${RES}"
-		local t_lb="Последний блок:         ${C_LGn}%d${RES}"
-		local t_bm="Блоков намайнено:       ${C_LGn}%d${RES}"
-		local t_sy1="Нода синхронизирована:  ${C_LR}нет${RES}"
-		local t_sy2="Осталось нагнать:       ${C_LR}%d-%d=%d (около %.2f мин.)${RES}"
-		local t_sy3="Нода синхронизирована:  ${C_LGn}да${RES}"
+		local t_nv="\nВерсия ноды:              ${C_LGn}%s${RES}"
+		local t_lb="Последний блок:           ${C_LGn}%d${RES}"
+		local t_sy1="Нода синхронизирована:    ${C_LR}нет${RES}"
+		local t_sy2="Осталось нагнать:         ${C_LR}%d-%d=%d (около %.2f мин.)${RES}"
+		local t_sy3="Нода синхронизирована:    ${C_LGn}да${RES}"
+		
+
+		
 		local t_sy_err="${C_LR}\nНода не запущена или запускается!${RES}"
 
 	# Send Pull request with new texts to add a language - https://github.com/SecorD0/Aleo/blob/main/node_info.sh
 	#elif [ "$language" = ".." ]; then
 	else
 		local t_wa="\nWallet address:          ${C_LGn}%s${RES}"
+		local t_mb="Blocks mined:            ${C_LGn}%d${RES}"
+		local t_lbp="Leaderboard position:    ${C_LGn}%d${RES}"
+		local t_lbs="Scored points:           ${C_LGn}%d${RES}"
 		
 		local t_nv="\nNode version:            ${C_LGn}%s${RES}"
 		local t_lb="Latest block height:     ${C_LGn}%d${RES}"
-		local t_bm="Blocks mined:            ${C_LGn}%d${RES}"
 		local t_sy1="Node is synchronized:    ${C_LR}no${RES}"
 		local t_sy2="It remains to catch up:  ${C_LR}%d-%d=%d (about %.2f min.)${RES}"
 		local t_sy3="Node is synchronized:    ${C_LGn}yes${RES}"
+		
+
+		
 		local t_sy_err="${C_LR}\nThe node isn't running or is starting!${RES}"
 	fi
 	
@@ -99,35 +109,44 @@ main() {
 		fi
 	fi
 	
+	
 	local local_rpc="http://localhost:${port}/"
 	local node_info=`wget -qO-  -t 1 -T 5 --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "getnodestate", "params": [] }' "$local_rpc" 2>/dev/null | jq`
-
+	local leaderboard_info=`wget -qO- "https://www.aleo.network/api/miner-info?address=$wallet_address" | jq`
+	
+	local mined_blocks=`jq -r ".blocksMined | length" <<< "$leaderboard_info"`
+	local position=`jq -r ".position" <<< "$leaderboard_info"`
+	local points=`jq -r ".score" <<< "$leaderboard_info"`
+	
 	local node_version="`snarkos --version` v`jq -r '.result.version' <<< \"$node_info\"`"
-	if [ -n "$node_info" ]; then
-		local latest_block_height=`jq -r ".result.latest_block_height" <<< $node_info`
-		if [ `jq -r ".result.status" <<< $node_info` = "Mining" ]; then
-			local catching_up="false"
-		else
-			local catching_up="true"
-		fi
+	local latest_block_height=`jq -r ".result.latest_block_height" <<< $node_info`
+	local status=`jq -r ".result.status" <<< $node_info`
+	if grep -q "$status" <<< "Mining Ready"; then
+		local catching_up="false"
+	else
+		local catching_up="true"
 	fi
-
+	
 	# Output
 	if [ "$raw_output" = "true" ]; then
-		printf_n '{"wallet_address": "%s", "node_version": "%s", "latest_block_height": %d, "catching_up": %b}' \
+		printf_n '{"wallet_address": "%s", "mined_blocks": %d, "position": %d, "points": %d, "node_version": "%s", "latest_block_height": %d, "catching_up": %b}' \
 "$wallet_address" \
+"$mined_blocks" \
+"$position" \
+"$points" \
 "$node_version" \
 "$latest_block_height" \
 "$catching_up" 2>/dev/null
 	else
 		if [ -n "$wallet_address" ]; then
 			printf_n "$t_wa" "$wallet_address"
+			printf_n "$t_mb" "$mined_blocks"
+			printf_n "$t_lbp" "$position"
+			printf_n "$t_lbs" "$points"
 		fi
-		printf_n "$t_nv" "$node_version"
-		if [ -n "$latest_block_height" ]; then
+		if [ -n "$node_info" ]; then
+			printf_n "$t_nv" "$node_version"
 			printf_n "$t_lb" "$latest_block_height"
-			local mined_blocks=`wget -qO- "https://www.aleo.network/api/miner-info?address=$wallet_address" | jq -r ".blocksMined | length"`
-			printf_n "$t_bm" "$mined_blocks"
 			if [ "$catching_up" = "true" ]; then
 				local current_block=`wget -qO-  -t 1 -T 5 --post-data '{"jsonrpc": "2.0", "id":"documentation", "method": "latestblockheight", "params": [] }' http://95.78.238.174:3032/ 2>/dev/null | jq ".result"`
 				local diff=`bc -l <<< "$current_block-$latest_block_height"`
