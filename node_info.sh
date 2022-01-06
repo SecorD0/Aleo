@@ -101,9 +101,9 @@ main() {
 		printf_n "${C_R}Change the name of the service file to ${C_LGn}aleod.service${RES}"
 		return 1 2>/dev/null; exit 1	
 	fi
-	local port=`cat "$service_file_path" 2>/dev/null | grep -oPm1 "(?<=rpc )([^%]+)(?=$)" | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
+	local port=`grep -oPm1 "(?<=rpc )([^%]+)(?=$)" "$service_file_path" 2>/dev/null | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
 	if [ ! -n "$port" ]; then
-		local port=`cat "$service_file_path" 2>/dev/null | grep -oPm1 "(?<=rpc )([^%]+)(?= --)" | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
+		local port=`grep -oPm1 "(?<=rpc )([^%]+)(?= --)" "$service_file_path" 2>/dev/null | grep -oPm1 "(?<=:)([^%]+)(?=$)"`
 		if [ ! -n "$port" ]; then
 			local port="3032"
 		fi
