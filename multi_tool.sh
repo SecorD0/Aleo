@@ -64,7 +64,7 @@ install() {
 	if [ ! -f $HOME/account_aleo.txt ]; then
 		snarkos experimental new_account > $HOME/account_aleo.txt
 	fi
-	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/miscellaneous/insert_variable.sh) -n aleo_wallet_address -v `cat $HOME/account_aleo.txt | grep -oPm1 "(?<=Address  )([^%]+)(?=$)"`
+	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/miscellaneous/insert_variable.sh) -n aleo_wallet_address -v `grep -oPm1 "(?<=Address  )([^%]+)(?=$)" $HOME/account_aleo.txt`
 	if [ ! -n "$aleo_wallet_address" ]; then
 		printf_n "${C_R}There is no \$aleo_wallet_address variable! \nCheck if the contents of the file are correct:${RES} cat $HOME/account_aleo.txt"
 		return 1 2>/dev/null; exit 1
