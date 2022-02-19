@@ -17,10 +17,11 @@ while test $# -gt 0; do
 		echo -e "${C_LGn}Usage${RES}: script ${C_LGn}[OPTIONS]${RES}"
 		echo
 		echo -e "${C_LGn}Options${RES}:"
-		echo -e "  -h, --help       show the help page"
-		echo -e "  -n, --node PORT  assign the specified port to use RPC (default is ${C_LGn}${node}${RES})"
-		echo -e "  -r, --rpc PORT   assign the specified port to use RPC (default is ${C_LGn}${rpc}${RES})"
-		echo -e "  -u, --update     update the node"
+		echo -e "  -h,  --help       show the help page"
+		echo -e "  -n,  --node PORT  assign the specified port to use RPC (default is ${C_LGn}${node}${RES})"
+		echo -e "  -r,  --rpc PORT   assign the specified port to use RPC (default is ${C_LGn}${rpc}${RES})"
+		echo -e "  -u,  --update     update the node"
+		echo -e "  -un, --uninstall  uninstall the node"
 		echo
 		echo -e "${C_LGn}Useful URLs${RES}:"
 		echo -e "https://github.com/SecorD0/Aleo/blob/main/multi_tool.sh — script URL"
@@ -41,6 +42,10 @@ while test $# -gt 0; do
 		;;
 	-u|--update)
 		function="update"
+		shift
+		;;
+	-un|--uninstall)
+		function="uninstall"
 		shift
 		;;
 	*|--)
@@ -141,8 +146,14 @@ update() {
 	cd
 	printf_n "${C_LGn}Done!${RES}"
 }
-auto_update() {
-	echo
+uninstall() {
+	sudo systemctl stop aleod aleou
+	sudo systemctl disable aleod aleou
+	rm -rf $HOME/snarkOS/ `which snarkos` $HOME/.aleo/ /etc/systemd/system/aleod.service /etc/systemd/system/aleou.service
+	sudo systemctl daemon-reload
+	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/miscellaneous/insert_variable.sh) -n aleo_wallet_address -da
+	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/miscellaneous/insert_variable.sh) -n aleo_log -da
+	. <(wget -qO- https://raw.githubusercontent.com/SecorD0/utils/main/miscellaneous/insert_variable.sh) -n aleo_node_info -da
 }
 
 # Actions
