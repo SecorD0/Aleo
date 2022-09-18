@@ -26,7 +26,7 @@ while test $# -gt 0; do
 		echo -e "${C_LGn}Useful URLs${RES}:"
 		echo -e "https://github.com/SecorD0/Aleo/blob/main/multi_tool.sh — script URL"
 		echo -e "https://teletype.in/@letskynode/Aleo_RU — Russian-language guide"
-		echo -e "https://t.me/letskynode — node Community"
+		echo -e "https://t.me/OnePackage — noderun and tech community"
 		echo
 		return 0 2>/dev/null; exit 0
 		;;
